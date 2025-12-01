@@ -1,29 +1,63 @@
-import { useState } from 'react'
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from './stores/authStore';
+import LoginPage from './pages/LoginPage';
+import DatasetsPage from './pages/DatasetsPage';
+import DatasetDetailsPage from './pages/DatasetDetailsPage';
+import AnnotationPage from './pages/AnnotationPage';
 
-function App() {
-  const [count, setCount] = useState(0)
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuthStore();
 
-  return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          SimplrFlow
-        </h1>
-        <p className="text-xl text-gray-600 mb-8">
-          Computer Vision Annotation Platform
-        </p>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-700 mb-4">Development Mode</p>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => setCount((count) => count + 1)}
-          >
-            count is {count}
-          </button>
-        </div>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
       </div>
-    </div>
-  )
+    );
+  }
+
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 }
 
-export default App
+function App() {
+  const { loadUser } = useAuthStore();
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <DatasetsPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/datasets/:datasetId"
+          element={
+            <PrivateRoute>
+              <DatasetDetailsPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/datasets/:datasetId/images/:imageId?"
+          element={
+            <PrivateRoute>
+              <AnnotationPage />
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;

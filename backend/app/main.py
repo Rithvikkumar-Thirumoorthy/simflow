@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.api import auth, datasets, images, annotations
 
 app = FastAPI(
     title="SimplrFlow - Computer Vision Annotation Platform",
@@ -29,9 +30,8 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
-# TODO: Import and include routers
-# from app.api import auth, datasets, images, annotations
-# app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
-# app.include_router(datasets.router, prefix="/api/datasets", tags=["datasets"])
-# app.include_router(images.router, prefix="/api/images", tags=["images"])
-# app.include_router(annotations.router, prefix="/api/annotations", tags=["annotations"])
+# Include API routers
+app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
+app.include_router(datasets.router, prefix="/api/datasets", tags=["datasets"])
+app.include_router(images.router, prefix="/api/images", tags=["images"])
+app.include_router(annotations.router, prefix="/api/annotations", tags=["annotations"])
